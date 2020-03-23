@@ -72,3 +72,35 @@ wowzacontentprotectionkey [-?|-h|--help]
 - **`--enable-mpegdashstreaming`** OR **`--disable-mpegdashstreaming`**
 
   Enable or disable content protection to MPEG-DASH Streaming.
+
+### Example
+
+```command line
+CMD> wowzacontentprotectionkey -k 50b115acace65f7aa8d0b1c28b371c04 -b "Pm0mygqqyOBY8OvD/6rSzg==" \
+    -p --playready-license-server-url "https://test.playready.microsoft.com/service/rightsmanager.asmx?cfg=(persist:false,sl:150,contentkey:PvTWCAzver0zdcLrchwK2w==)" \
+    -w --widevine-content-id shigeyf-wv-singlekey \
+    --enable-mpegdashstreaming --enable-cmafstreaming
+```
+
+```Output
+cmafstreaming-cenc-algorithm: AESCTR
+cmafstreaming-cenc-content-key: Pm0mygqqyOBY8OvD/6rSzg==
+cmafstreaming-cenc-key-id: 50b115ac-ace6-5f7a-a8d0-b1c28b371c04
+cmafstreaming-cenc-keyserver-playready-checksum: MwROBJRAfBA=
+cmafstreaming-cenc-keyserver-playready-license-url: https://test.playready.microsoft.com/service/rightsmanager.asmx?cfg=(persist:false,sl:150,contentkey:PvTWCAzver0zdcLrchwK2w==)
+cmafstreaming-cenc-keyserver-playready-system-id: 9a04f079-9840-4286-ab92-e65be0885f95
+cmafstreaming-cenc-keyserver-playready: true
+cmafstreaming-cenc-keyserver-widevine-pssh-data: IhRzaGlnZXlmLXd2LXNpbmdsZWtleQ==
+cmafstreaming-cenc-keyserver-widevine-system-id: edef8ba9-79d6-4ace-a3c8-27dcd51d21ed
+cmafstreaming-cenc-keyserver-widevine: true
+mpegdashstreaming-cenc-algorithm: AESCTR
+mpegdashstreaming-cenc-content-key: Pm0mygqqyOBY8OvD/6rSzg==
+mpegdashstreaming-cenc-key-id: 50b115ac-ace6-5f7a-a8d0-b1c28b371c04
+mpegdashstreaming-cenc-keyserver-playready-checksum: MwROBJRAfBA=
+mpegdashstreaming-cenc-keyserver-playready-license-url: https://test.playready.microsoft.com/service/rightsmanager.asmx?cfg=(persist:false,sl:150,contentkey:PvTWCAzver0zdcLrchwK2w==)
+mpegdashstreaming-cenc-keyserver-playready-system-id: 9a04f079-9840-4286-ab92-e65be0885f95
+mpegdashstreaming-cenc-keyserver-playready: true
+mpegdashstreaming-cenc-keyserver-widevine-pssh-data: IhRzaGlnZXlmLXd2LXNpbmdsZWtleQ==
+mpegdashstreaming-cenc-keyserver-widevine-system-id: edef8ba9-79d6-4ace-a3c8-27dcd51d21ed
+mpegdashstreaming-cenc-keyserver-widevine: true
+```
