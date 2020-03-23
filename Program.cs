@@ -22,17 +22,30 @@ namespace WowzaContentProtectionKey
         [Option("-b|--keybase64str", Description = "Base64 string of content key bytes.")]
         public string Base64KeyBytesString { get; }
 
+        [Option("-p|--enable-playready", Description = "Enable PlayReady DRM.")]
+        public bool PlayReadyEnabled { get; }
+
+        [Option("--playready-license-server-url", Description = "License Server URL for PlayReady DRM.")]
+        public string PlayReadyLicenseServerUrl { get; }
+
         [Option("-w|--enable-widevine", Description = "Enable Widevine DRM.")]
         public bool WidevineEnabled { get; }
 
         [Option("--widevine-content-id", Description = "Content Id for Widevine DRM.")]
         public string WidevineContentId { get; }
 
-        [Option("-p|--enable-playready", Description = "Enable PlayReady DRM.")]
-        public bool PlayReadyEnabled { get; }
+        [Option("--enable-mpegdashstreaming", Description = "Enable content encryption to MPEG-DASH Streaming (default).")]
+        public bool MpegDashStreamingEnabled { get; }
 
-        [Option("--playready-license-server-url", Description = "License Server URL for PlayReady DRM.")]
-        public string PlayReadyLicenseServerUrl { get; }
+        [Option("--disable-mpegdashstreaming", Description = "Disable content encryption to MPEG-DASH Streaming.")]
+        public bool MpegDashStreamingDisabled { get; }
+
+        [Option("--enable-cmafstreaming", Description = "Enable content encryption to CMAF MPEG-DASH Streaming.")]
+        public bool CmafStreamingEnabled { get; }
+
+        [Option("--disable-cmafstreaming", Description = "Disable content encryption to MPEG-DASH Streaming.")]
+        public bool CmafStreamingDisabled { get; }
+
 
         private int OnExecute(CommandLineApplication app)
         {
@@ -43,6 +56,19 @@ namespace WowzaContentProtectionKey
             }
 
             WowzaContentProtectionKey wcpkey = new WowzaContentProtectionKey(HexKeyIdString, Base64KeyBytesString);
+
+            if (MpegDashStreamingDisabled && MpegDashStreamingEnabled)
+            {
+                app.ShowHelp();
+                return 1;
+            }
+            if (CmafStreamingDisabled && CmafStreamingEnabled)
+            {
+                app.ShowHelp();
+                return 1;
+            }
+            wcpkey.SetStreamingMpegDash(MpegDashStreamingEnabled, MpegDashStreamingDisabled);
+            wcpkey.SetStreamingCmaf(CmafStreamingEnabled, CmafStreamingDisabled);
 
             if (PlayReadyEnabled)
             {

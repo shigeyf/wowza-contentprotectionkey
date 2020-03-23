@@ -3,6 +3,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -42,15 +43,16 @@ namespace WowzaContentProtectionKey
 
         #endregion
 
-        public StringBuilder key = new StringBuilder();
+        public StringBuilder output = new StringBuilder();
+        List<string> keys = new List<string>();
         public byte[] keyId;
         public string keyIdUUID;
         public byte[] keyBytes;
+        public StreamingProto streaming = new StreamingProto();
         protected PlayReady playready = null;
         protected Widevine widevine = null;
-        protected StreamingProto streaming = new StreamingProto();
 
-        protected class StreamingProto
+        public class StreamingProto
         {
             public bool enableMpegDash = false;
             public bool enableCmaf = false;
@@ -68,10 +70,19 @@ namespace WowzaContentProtectionKey
         {
             this.playready = new PlayReady(this.keyId, this.keyIdUUID, this.keyBytes, licenseServerUrl, keySeed);
         }
-
         public void EnableWidevine(string contentId)
         {
             this.widevine = new Widevine(this.keyId, this.keyIdUUID, this.keyBytes, contentId);
+        }
+        public void SetStreamingMpegDash(bool enabled, bool disabled)
+        {
+            if (enabled) this.streaming.enableMpegDash = true;
+            if (disabled) this.streaming.enableMpegDash = false;
+        }
+        public void SetStreamingCmaf(bool enabled, bool disabled)
+        {
+            if (enabled) this.streaming.enableCmaf = true;
+            if (disabled) this.streaming.enableCmaf = false;
         }
 
         public string GenerateWowzaKey()
@@ -84,15 +95,15 @@ namespace WowzaContentProtectionKey
             //
             if (streaming.enableMpegDash)
             {
-                add(MpegDashCencKeyId, keyIdUUID);
-                add(MpegDashCencContentKey, Convert.ToBase64String(keyBytes));
-                add(MpegDashCencAlgorithm, CencAlgorithmAesCtr);
+                Add(MpegDashCencKeyId, keyIdUUID);
+                Add(MpegDashCencContentKey, Convert.ToBase64String(keyBytes));
+                Add(MpegDashCencAlgorithm, CencAlgorithmAesCtr);
             }
             if (streaming.enableCmaf)
             {
-                add(CmafCencKeyId, keyIdUUID);
-                add(CmafCencContentKey, Convert.ToBase64String(keyBytes));
-                add(CmafCencAlgorithm, CencAlgorithmAesCtr);
+                Add(CmafCencKeyId, keyIdUUID);
+                Add(CmafCencContentKey, Convert.ToBase64String(keyBytes));
+                Add(CmafCencAlgorithm, CencAlgorithmAesCtr);
             }
 
             //
@@ -100,10 +111,20 @@ namespace WowzaContentProtectionKey
             //
             if (this.playready != null && this.playready.Enabled)
             {
-                add(MpegDashCencKeyServerPlayReady, this.playready.Enabled.ToString().ToLower());
-                add(MpegDashCencKeyServerPlayReadySystemId, PlayReady.SystemId.ToString());
-                add(MpegDashCencKeyServerPlayReadyLicenseUrl, this.playready.LicenseServerUrl);
-                add(MpegDashCencKeyServerPlayReadyChecksum, this.playready.KeyChecksum);
+                if (streaming.enableMpegDash)
+                {
+                    Add(MpegDashCencKeyServerPlayReady, this.playready.Enabled.ToString().ToLower());
+                    Add(MpegDashCencKeyServerPlayReadySystemId, PlayReady.SystemId.ToString());
+                    Add(MpegDashCencKeyServerPlayReadyLicenseUrl, this.playready.LicenseServerUrl);
+                    Add(MpegDashCencKeyServerPlayReadyChecksum, this.playready.KeyChecksum);
+                }
+                if (streaming.enableCmaf)
+                {
+                    Add(CmafCencKeyServerPlayReady, this.playready.Enabled.ToString().ToLower());
+                    Add(CmafCencKeyServerPlayReadySystemId, PlayReady.SystemId.ToString());
+                    Add(CmafCencKeyServerPlayReadyLicenseUrl, this.playready.LicenseServerUrl);
+                    Add(CmafCencKeyServerPlayReadyChecksum, this.playready.KeyChecksum);
+                }
             }
 
             //
@@ -111,20 +132,39 @@ namespace WowzaContentProtectionKey
             //
             if (this.widevine != null && this.widevine.Enabled)
             {
-                add(MpegDashCencKeyServerWidevine, this.widevine.Enabled.ToString().ToLower());
-                add(MpegDashCencKeyServerWidevineSystemId, Widevine.SystemId.ToString());
-                add(MpegDashCencKeyServerWidevinePsshData, this.widevine.PsshData);
+                if (streaming.enableMpegDash)
+                {
+                    Add(MpegDashCencKeyServerWidevine, this.widevine.Enabled.ToString().ToLower());
+                    Add(MpegDashCencKeyServerWidevineSystemId, Widevine.SystemId.ToString());
+                    Add(MpegDashCencKeyServerWidevinePsshData, this.widevine.PsshData);
+                }
+                if (streaming.enableCmaf)
+                {
+                    Add(CmafCencKeyServerWidevine, this.widevine.Enabled.ToString().ToLower());
+                    Add(CmafCencKeyServerWidevineSystemId, Widevine.SystemId.ToString());
+                    Add(CmafCencKeyServerWidevinePsshData, this.widevine.PsshData);
+                }
             }
 
-            return key.ToString();
+            Final();
+            return output.ToString();
         }
 
         #region static methods
 
-        private void add(string key, string value)
+        private void Add(string key, string value)
         {
             string line = key + ": " + value + "\n";
-            this.key.Append(line);
+            this.keys.Add(line);
+        }
+
+        private void Final()
+        {
+            this.keys.Sort();
+            foreach (string key in this.keys)
+            {
+                output.Append(key);
+            }
         }
 
         public static byte[] StringToByteArray(string hexString)
