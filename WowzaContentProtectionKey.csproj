@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>WowzaContentProtectionKey</RootNamespace>
+    <AssemblyName>WowzaContentProtectionKey</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.11.4" />
+    <PackageReference Include="Google.Protobuf.Tools" Version="3.11.4" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.6.0" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <CallTarget Targets="WidevinePsshData" />
+  </Target>
+  <Target Name="WidevinePsshData" Inputs="widevine_pssh_data.proto" Outputs="WidevinePsshData.cs">
+    <Exec Command="$(NuGetPackageRoot)google.protobuf.tools\3.11.4\tools\windows_x64\protoc --proto_path=. --csharp_out=. widevine_pssh_data.proto" Outputs="WidevinePsshData.cs" />
+  </Target>
+
+</Project>
